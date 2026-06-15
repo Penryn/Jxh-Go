@@ -99,7 +99,7 @@ err := napcat.ServeReverseWebSocket(ctx, ":8080", func(client *napcat.Client) {
 SDK 的 Go module 路径以 `go.mod` 为准：
 
 ```text
-github.com/phlin/napcat-sdk
+github.com/zjutjh/napcat-sdk
 ```
 
 `internal/napcat` 只做一层很薄的适配，把 SDK 类型转换成业务层接口，业务模块不直接依赖 SDK 细节。
@@ -142,7 +142,7 @@ SDK 已实现 WebSocket `echo` 匹配和事件流，Go bot 不再手写 pending 
 | --- | --- |
 | Go 版本 | Go 1.25+ |
 | HTTP/WebSocket | 由 `napcat-sdk` 基于标准 HTTP server 和 `coder/websocket` 提供 |
-| NapCat SDK | `github.com/phlin/napcat-sdk` |
+| NapCat SDK | `github.com/zjutjh/napcat-sdk` |
 | 日志 | `go.uber.org/zap` |
 | 配置 | `gopkg.in/yaml.v3` |
 | ORM | `gorm.io/gorm` |
