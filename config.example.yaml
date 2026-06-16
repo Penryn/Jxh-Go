@@ -90,8 +90,8 @@ embedding:
 vector:
   # 向量索引配置位。当前默认关闭；知识库以 MySQL 为源数据，向量索引应可重建。
   enabled: false
-  # Milvus 地址。启用向量索引时使用。
-  address: "milvus:19530"
+  # Milvus 地址。bot 单独在宿主机运行时使用 127.0.0.1:19530。
+  address: "127.0.0.1:19530"
   # Milvus database 名称。
   db_name: "default"
   # Milvus collection 名称。

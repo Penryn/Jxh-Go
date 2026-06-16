@@ -110,11 +110,27 @@ compose 默认启动以下外部依赖：
 | `mysql` | GORM/MySQL 数据库 | `3306` |
 | `napcat` | QQ 登录和 OneBot 11 协议适配 | `3000`, `3001`, `6099` |
 
-引用图服务按实际镜像调整后启用 `quote` profile：
+引用图服务默认不启动，需要时启用 `quote` profile：
 
 ```bash
 docker compose --profile quote up -d
 ```
+
+向量数据库默认不启动。Milvus 由 `milvus-etcd`、`milvus-minio`、`milvus-standalone` 三个服务组成，需要向量检索时启用 `vector` profile：
+
+```bash
+docker compose --profile vector up -d
+```
+
+Milvus 会暴露：
+
+| 服务 | 用途 | 暴露端口 |
+| --- | --- | --- |
+| `milvus-standalone` | Milvus gRPC/API | `19530`, `9091` |
+| `milvus-minio` | Milvus 对象存储依赖 | `9000`, `9001` |
+| `milvus-etcd` | Milvus 元数据依赖 | 不暴露到宿主机 |
+
+当前 `/ai` 可先走 MySQL 知识库的文本检索；`vector.enabled` 打开后，`config.yaml` 里的 `vector.address` 应保持为 `127.0.0.1:19530`，因为 Go bot 是在宿主机单独运行。
 
 ## 数据库 Schema
 
@@ -212,4 +228,3 @@ go run ./cmd/gormgen -config config.yaml -schema deploy/mysql/init/001_schema.sq
 | `internal/storage` | GORM repository 和存储模型 |
 | `internal/ai` | `/ai` RAG 服务和 Eino ChatModel 适配 |
 | `deploy/mysql/init` | MySQL 初始化 SQL |
-
