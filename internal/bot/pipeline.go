@@ -111,7 +111,7 @@ func (p *Pipeline) HandleGroupMessage(ctx context.Context, msg GroupMessage) err
 	case text == "/reload":
 		if p.reloader != nil {
 			if err := p.reloader.Reload(ctx); err != nil {
-				return err
+				return sender.SendGroupText(ctx, msg.GroupID, "重载失败："+err.Error())
 			}
 		}
 		return sender.SendGroupText(ctx, msg.GroupID, "重载成功")

@@ -79,6 +79,7 @@ docker logs napcat
 
 在 NapCat WebUI 中登录 QQ，并开启 OneBot 11 正向 WebSocket：
 
+- 监听地址使用 `0.0.0.0`，不要填 `127.0.0.1`。NapCat 在容器内运行，填 `127.0.0.1` 会只监听容器内部 loopback，宿主机上的 bot 会连接失败。
 - 监听端口使用 `3001`。
 - token 设置为一个自定义密钥，例如 `change-me`。
 - `config.yaml` 里的 `onebot.access_token` 必须和 NapCat 端 token 完全一致。
@@ -167,6 +168,8 @@ go run ./cmd/gormgen -config config.yaml -schema deploy/mysql/init/001_schema.sq
 `cmd/gormgen` 会先执行 schema SQL，再通过 `gorm.io/gen` 读取当前 MySQL 表结构，输出到 `internal/storage/query`。
 
 ## WPS 知识表
+
+`wps.share_url` 应填写网页端“右键文件 -> 导出文档链接”得到的链接，或可直接下载的 xlsx 地址。普通 `365.kdocs.cn/l/...` 分享页只用于浏览器打开文档，程序请求时通常会返回登录/跳转 HTML，不能直接导入；受保护文档还需要配置 `wps.sid` 或 `JXH_WPS_SID`。
 
 基础列兼容旧回复表：
 

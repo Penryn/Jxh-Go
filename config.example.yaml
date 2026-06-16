@@ -15,6 +15,7 @@ server:
 onebot:
   # NapCat OneBot 11 正向 WebSocket 地址。
   # compose 中 NapCat 默认把 3001 暴露到宿主机，因此本地单独运行 bot 时使用 127.0.0.1。
+  # 注意：NapCat WebUI 里的 WebSocket server 监听地址应填 0.0.0.0，而不是 127.0.0.1。
   ws_url: "ws://127.0.0.1:3001"
   # OneBot 访问令牌，需要和 NapCat WebSocket 服务端配置的 token 完全一致。
   # bot 会在 WebSocket 握手和 API 调用中发送 Authorization: Bearer <access_token>。
@@ -26,7 +27,9 @@ onebot:
   reconnect_interval_sec: 5
 
 wps:
-  # WPS 在线表格分享链接，用于 /reload 或启动同步时下载知识库。
+  # WPS 在线表格下载入口，用于 /reload 或启动同步时下载知识库。
+  # 优先填写网页端“右键文件 -> 导出文档链接”得到的链接，或可直接下载的 xlsx URL。
+  # 普通 365.kdocs.cn/l/... 分享页通常返回 HTML 页面，不能直接作为 xlsx 导入。
   share_url: ""
   # WPS 登录态 sid。如果分享链接需要登录访问，需要填写；也可用 JXH_WPS_SID 覆盖。
   sid: ""
