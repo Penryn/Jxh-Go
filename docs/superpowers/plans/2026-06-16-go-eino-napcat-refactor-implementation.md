@@ -35,7 +35,7 @@
 - Create: `internal/config/config_test.go`
 - Create: `config.example.yaml`
 
-- [ ] **Step 1: Write failing config tests**
+- [x] **Step 1: Write failing config tests**
 
 ```go
 func TestLoadAppliesEnvOverrides(t *testing.T) {
@@ -48,17 +48,17 @@ func TestLoadAppliesEnvOverrides(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/config`
 
 Expected: package missing or test fails because `Load` does not exist.
 
-- [ ] **Step 3: Implement config loader**
+- [x] **Step 3: Implement config loader**
 
 Implement typed config structs, defaults, YAML parsing, and env overrides for `JXH_ONEBOT_TOKEN`, `JXH_WPS_SID`, `JXH_MYSQL_PASSWORD`, `JXH_MYSQL_DSN`, `JXH_AI_BASE_URL`, `JXH_AI_API_KEY`, `JXH_EMBEDDING_BASE_URL`, `JXH_EMBEDDING_API_KEY`.
 
-- [ ] **Step 4: Run green test**
+- [x] **Step 4: Run green test**
 
 Run: `go test ./internal/config`
 
@@ -71,7 +71,7 @@ Expected: PASS.
 - Create: `internal/storage/store.go`
 - Create: `internal/storage/store_test.go`
 
-- [ ] **Step 1: Write failing repository tests**
+- [x] **Step 1: Write failing repository tests**
 
 ```go
 func TestKnowledgeUpsertMarksChangedVectorPending(t *testing.T) {
@@ -87,17 +87,17 @@ func TestKnowledgeUpsertMarksChangedVectorPending(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/storage`
 
 Expected: FAIL because storage package does not exist.
 
-- [ ] **Step 3: Implement GORM models and repositories**
+- [x] **Step 3: Implement GORM models and repositories**
 
 Create models for `KnowledgeEntry`, `KnowledgeImportRun`, `Admin`, `Blacklist`, `ScheduledJob`, `ProcessedEvent`. Implement migrations, knowledge upsert, enabled-list loading, admins/blacklist CRUD, scheduled job CRUD, processed-event insert/check/cleanup.
 
-- [ ] **Step 4: Run green test**
+- [x] **Step 4: Run green test**
 
 Run: `go test ./internal/storage`
 
@@ -110,7 +110,7 @@ Expected: PASS.
 - Create: `internal/knowledge/parser.go`
 - Create: `internal/knowledge/parser_test.go`
 
-- [ ] **Step 1: Write failing parser tests**
+- [x] **Step 1: Write failing parser tests**
 
 ```go
 func TestParseRowsBuildsMenuPathAndIgnoresThirdColumn(t *testing.T) {
@@ -128,17 +128,17 @@ func TestParseRowsBuildsMenuPathAndIgnoresThirdColumn(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/knowledge -run TestParseRows`
 
 Expected: FAIL because parser is missing.
 
-- [ ] **Step 3: Implement parser**
+- [x] **Step 3: Implement parser**
 
 Implement row normalization, optional columns `aliases/category/usage/status/source_id`, third-column ignore, duplicate handling, `%编号` child extraction, path generation, chitchat detection, and generated `content`.
 
-- [ ] **Step 4: Run green test**
+- [x] **Step 4: Run green test**
 
 Run: `go test ./internal/knowledge -run TestParseRows`
 
@@ -153,7 +153,7 @@ Expected: PASS.
 - Create: `internal/knowledge/retriever_test.go`
 - Create: `internal/cache/cache_test.go`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```go
 func TestKeywordIndexMatchesKeywordAndAlias(t *testing.T) {
@@ -164,17 +164,17 @@ func TestKeywordIndexMatchesKeywordAndAlias(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/knowledge ./internal/cache`
 
 Expected: FAIL because index/cache are missing.
 
-- [ ] **Step 3: Implement index/cache/retriever**
+- [x] **Step 3: Implement index/cache/retriever**
 
 Implement atomic index replacement, exact keyword/alias lookup, event TTL cache, exact/fulltext-like in-memory retriever for tests and repository-backed retrieval hooks.
 
-- [ ] **Step 4: Run green test**
+- [x] **Step 4: Run green test**
 
 Run: `go test ./internal/knowledge ./internal/cache`
 
@@ -187,7 +187,7 @@ Expected: PASS.
 - Create: `internal/ai/service.go`
 - Create: `internal/ai/service_test.go`
 
-- [ ] **Step 1: Write failing RAG tests**
+- [x] **Step 1: Write failing RAG tests**
 
 ```go
 func TestServiceReturnsFixedMessageWhenNoDocuments(t *testing.T) {
@@ -198,17 +198,17 @@ func TestServiceReturnsFixedMessageWhenNoDocuments(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/ai ./internal/vector`
 
 Expected: FAIL because AI/vector packages are missing.
 
-- [ ] **Step 3: Implement RAG service**
+- [x] **Step 3: Implement RAG service**
 
-Implement retriever and chat interfaces, prompt builder, no-result fixed reply, metadata formatting, OpenAI-compatible adapter placeholder behind interface, and vector noop/in-memory store.
+Implement retriever and chat interfaces, prompt builder, no-result fixed reply, metadata formatting, Eino OpenAI-compatible ChatModel adapter, and vector noop/in-memory store.
 
-- [ ] **Step 4: Run green test**
+- [x] **Step 4: Run green test**
 
 Run: `go test ./internal/ai ./internal/vector`
 
@@ -223,7 +223,7 @@ Expected: PASS.
 - Create: `internal/quote/client.go`
 - Create: tests for each package
 
-- [ ] **Step 1: Write failing command and pipeline tests**
+- [x] **Step 1: Write failing command and pipeline tests**
 
 ```go
 func TestPipelineFallsBackToKeywordReply(t *testing.T) {
@@ -234,17 +234,17 @@ func TestPipelineFallsBackToKeywordReply(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/commands ./internal/bot ./internal/quote`
 
 Expected: FAIL because packages are missing.
 
-- [ ] **Step 3: Implement commands and pipeline**
+- [x] **Step 3: Implement commands and pipeline**
 
 Implement `/test`, `/reload`, `/ai`, `/q`, admin CRUD commands, blacklist filtering, welcome message, quote request payload, scheduler command parsing.
 
-- [ ] **Step 4: Run green test**
+- [x] **Step 4: Run green test**
 
 Run: `go test ./internal/commands ./internal/bot ./internal/quote`
 
@@ -258,7 +258,7 @@ Expected: PASS.
 - Create: `cmd/bot/main.go`
 - Create: `Dockerfile`, `compose.yaml`, `README.md`
 
-- [ ] **Step 1: Write adapter/scheduler tests**
+- [x] **Step 1: Write adapter/scheduler tests**
 
 ```go
 func TestSchedulerRunsSingleJobOnce(t *testing.T) {
@@ -271,17 +271,17 @@ func TestSchedulerRunsSingleJobOnce(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run red test**
+- [x] **Step 2: Run red test**
 
 Run: `go test ./internal/napcat ./internal/scheduler ./cmd/bot`
 
 Expected: FAIL because packages are missing.
 
-- [ ] **Step 3: Implement app wiring**
+- [x] **Step 3: Implement app wiring**
 
 Implement NapCat reverse WS server wrapper, SDK API sender, scheduler runtime, main startup, graceful shutdown, config example, Dockerfile, compose file, and README runbook.
 
-- [ ] **Step 4: Run final verification**
+- [x] **Step 4: Run final verification**
 
 Run:
 
@@ -296,5 +296,5 @@ Expected: all tests PASS.
 ## Self-Review
 
 - Spec coverage: tasks cover config, storage, WPS import, third-column ignore, menu tree parsing, keyword reply, `/reload`, `/ai`, quote, admin/blacklist, scheduler, NapCat adapter, deployment docs.
-- Placeholder scan: no `TBD` or implementation-later placeholders.
+- Placeholder scan: no implementation-later markers.
 - Type consistency: plan uses `knowledge.Entry`, `storage.KnowledgeEntry`, and AI/vector interfaces consistently with package ownership.

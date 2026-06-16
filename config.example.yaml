@@ -1,0 +1,72 @@
+app:
+  debug: false
+  log_level: "info"
+  timezone: "Asia/Shanghai"
+
+server:
+  addr: ":8080"
+  onebot_path: "/onebot/v11/ws"
+
+onebot:
+  access_token: ""
+  api_timeout_sec: 30
+
+wps:
+  share_url: ""
+  sid: ""
+  sheet: "release"
+  cache_file: "./data/cache/knowledge.xlsx"
+  sync_on_start: true
+
+database:
+  host: "mysql"
+  port: 3306
+  user: "jxh"
+  password: ""
+  name: "jxh_bot"
+  charset: "utf8mb4"
+  parse_time: true
+  loc: "Local"
+
+ai:
+  enabled: true
+  base_url: ""
+  api_key: ""
+  model: ""
+  timeout_sec: 30
+  max_question_chars: 500
+  top_k: 5
+  score_threshold: 0.1
+
+embedding:
+  enabled: false
+  base_url: ""
+  api_key: ""
+  model: ""
+  dimensions: 1024
+
+vector:
+  enabled: false
+  address: "milvus:19530"
+  db_name: "default"
+  collection_name: "jxh_knowledge_vectors"
+  metric_type: "COSINE"
+  top_k: 8
+  score_threshold: 0.7
+
+event_dedupe:
+  retention_hours: 72
+  cleanup_interval_hours: 6
+
+cache:
+  ai_retrieval_ttl_sec: 300
+
+quote:
+  base_url: "http://quote:5000"
+  timeout_sec: 10
+
+scheduler:
+  timezone: "Asia/Shanghai"
+
+debug:
+  enable_test_command: true

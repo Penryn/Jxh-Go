@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: jxh_bot
+      MYSQL_USER: jxh
+      MYSQL_PASSWORD: ${JXH_MYSQL_PASSWORD:-jxh_password}
+      MYSQL_ROOT_PASSWORD: ${JXH_MYSQL_ROOT_PASSWORD:-root_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  bot:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      JXH_MYSQL_PASSWORD: ${JXH_MYSQL_PASSWORD:-jxh_password}
+      JXH_ONEBOT_TOKEN: ${JXH_ONEBOT_TOKEN:-}
+      JXH_WPS_SID: ${JXH_WPS_SID:-}
+      JXH_AI_BASE_URL: ${JXH_AI_BASE_URL:-}
+      JXH_AI_API_KEY: ${JXH_AI_API_KEY:-}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - bot_data:/app/data
+
+  quote:
+    image: ghcr.io/mangogovo/qq-quote-generator:latest
+    profiles: ["quote"]
+
+volumes:
+  mysql_data:
+  bot_data:
