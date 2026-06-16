@@ -1,73 +1,141 @@
+# 精小弘 Go bot 示例配置。
+# 使用方式：
+#   cp config.example.yaml config.yaml
+#   按实际部署修改 config.yaml
+#
+# 常用敏感字段也可以通过环境变量覆盖：
+#   JXH_ONEBOT_TOKEN
+#   JXH_ONEBOT_WS_URL
+#   JXH_WPS_SID
+#   JXH_MYSQL_PASSWORD
+#   JXH_MYSQL_DSN
+#   JXH_AI_BASE_URL
+#   JXH_AI_API_KEY
+#   JXH_EMBEDDING_BASE_URL
+#   JXH_EMBEDDING_API_KEY
+
 app:
+  # 是否开启调试模式。当前主要作为运行环境标记保留。
   debug: false
+  # 日志级别，预期值：debug、info、warn、error。
   log_level: "info"
+  # 应用默认时区。定时任务、日志和时间计算建议统一使用 Asia/Shanghai。
   timezone: "Asia/Shanghai"
 
 server:
+  # 反向 WebSocket fallback 的监听地址。
+  # 默认情况下 bot 使用 onebot.ws_url 主动连接 NapCat；只有 onebot.ws_url 为空时才会监听该地址。
   addr: ":8080"
 
 onebot:
+  # NapCat OneBot 11 正向 WebSocket 地址。
+  # compose 中 NapCat 默认把 3001 暴露到宿主机，因此本地单独运行 bot 时使用 127.0.0.1。
   ws_url: "ws://127.0.0.1:3001"
+  # OneBot 访问令牌，需要和 NapCat 端配置一致。为空表示不校验。
   access_token: ""
+  # bot 调用 OneBot API 等待响应的超时时间，单位秒。
   api_timeout_sec: 30
+  # 正向 WebSocket 断开后的重连间隔，单位秒。
   reconnect_interval_sec: 5
 
 wps:
+  # WPS 在线表格分享链接，用于 /reload 或启动同步时下载知识库。
   share_url: ""
+  # WPS 登录态 sid。如果分享链接需要登录访问，需要填写；也可用 JXH_WPS_SID 覆盖。
   sid: ""
+  # 要读取的 sheet 名称。旧项目默认使用 release。
   sheet: "release"
+  # 下载后的 xlsx 本地缓存路径，便于排查导入问题。
   cache_file: "./data/cache/knowledge.xlsx"
+  # 启动时是否自动从 WPS 同步一次知识库。share_url 为空时不会同步。
   sync_on_start: true
 
 database:
+  # MySQL 主机。compose 只启动依赖，bot 单独跑，所以默认连接宿主机暴露的 127.0.0.1:3306。
   host: "127.0.0.1"
+  # MySQL 端口。
   port: 3306
+  # MySQL 用户名。需要和 compose.yaml 的 MYSQL_USER 一致。
   user: "jxh"
+  # MySQL 密码。需要和 compose.yaml 的 MYSQL_PASSWORD 一致；生产环境建议用 JXH_MYSQL_PASSWORD 覆盖。
   password: "jxh_password"
+  # MySQL 数据库名。需要和 compose.yaml 的 MYSQL_DATABASE 一致。
   name: "jxh_bot"
+  # MySQL 字符集。QQ/WPS 内容包含 emoji 和中文，必须使用 utf8mb4。
   charset: "utf8mb4"
+  # 是否让 MySQL driver 自动解析 time.Time。
   parse_time: true
+  # MySQL 时间位置。Local 会使用运行环境本地时区。
   loc: "Local"
+  # 可选完整 DSN。非空时优先使用该字段，忽略上面的 host/port/user/password/name 等拆分字段。
+  dsn: ""
 
 ai:
+  # 是否启用 /ai 入口。当前代码会创建 AI 服务；如果模型未配置，会使用抽取式 fallback。
   enabled: true
+  # OpenAI 兼容 ChatModel base_url，例如 https://api.openai.com/v1。
   base_url: ""
+  # ChatModel API Key，建议用 JXH_AI_API_KEY 注入。
   api_key: ""
+  # ChatModel 名称，例如 gpt-4.1-mini、qwen-plus 等，取决于你的模型服务。
   model: ""
+  # 调用 ChatModel 的超时时间，单位秒。
   timeout_sec: 30
+  # /ai 问题最大长度，超过后会截断，避免超长 prompt。
   max_question_chars: 500
+  # 每次 RAG 检索送入 prompt 的知识条数。
   top_k: 5
+  # 检索分数阈值。当前文本检索会使用该值过滤低相关知识。
   score_threshold: 0.1
 
 embedding:
+  # Embedding 配置位。当前默认关闭，后续接入向量重建/向量检索时使用。
   enabled: false
+  # OpenAI 兼容 Embedding base_url。
   base_url: ""
+  # Embedding API Key，建议用 JXH_EMBEDDING_API_KEY 注入。
   api_key: ""
+  # Embedding 模型名。
   model: ""
+  # 向量维度，需要和 Embedding 模型输出维度一致。
   dimensions: 1024
 
 vector:
+  # 向量索引配置位。当前默认关闭；知识库以 MySQL 为源数据，向量索引应可重建。
   enabled: false
+  # Milvus 地址。启用向量索引时使用。
   address: "milvus:19530"
+  # Milvus database 名称。
   db_name: "default"
+  # Milvus collection 名称。
   collection_name: "jxh_knowledge_vectors"
+  # 向量相似度度量类型，常用 COSINE、IP、L2。
   metric_type: "COSINE"
+  # 向量检索返回条数。
   top_k: 8
+  # 向量检索分数阈值。
   score_threshold: 0.7
 
 event_dedupe:
+  # processed_events 保留时间，单位小时。用于避免 NapCat 重连边界重复处理事件。
   retention_hours: 72
+  # processed_events 清理任务间隔，单位小时。
   cleanup_interval_hours: 6
 
 cache:
+  # /ai 检索结果缓存 TTL，单位秒。当前保留为配置位，后续可用于降低重复问题检索成本。
   ai_retrieval_ttl_sec: 300
 
 quote:
+  # 引用图服务地址。启用 quote profile 后默认映射到宿主机 5000。
   base_url: "http://127.0.0.1:5000"
+  # 调用引用图服务超时时间，单位秒。
   timeout_sec: 10
 
 scheduler:
+  # 定时任务使用的时区。建议和 app.timezone 保持一致。
   timezone: "Asia/Shanghai"
 
 debug:
+  # 是否启用 /test 命令。生产环境可关闭。
   enable_test_command: true
