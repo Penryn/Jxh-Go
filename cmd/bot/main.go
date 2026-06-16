@@ -62,11 +62,12 @@ func main() {
 	}
 
 	chat := ai.Chat(ai.ExtractiveChat{})
-	if cfg.AI.BaseURL != "" && cfg.AI.APIKey != "" && cfg.AI.Model != "" {
+	if shouldCreateEinoChat(cfg.AI) {
 		einoChat, err := ai.NewEinoChat(ctx, ai.EinoChatConfig{
-			BaseURL: cfg.AI.BaseURL,
-			APIKey:  cfg.AI.APIKey,
-			Model:   cfg.AI.Model,
+			Provider: cfg.AI.Provider,
+			BaseURL:  cfg.AI.BaseURL,
+			APIKey:   cfg.AI.APIKey,
+			Model:    cfg.AI.Model,
 		})
 		if err != nil {
 			log.Fatalf("create eino chat: %v", err)
@@ -106,6 +107,16 @@ func main() {
 	if err := server.Serve(ctx); err != nil {
 		log.Fatalf("serve napcat websocket: %v", err)
 	}
+}
+
+func shouldCreateEinoChat(cfg config.AIConfig) bool {
+	if cfg.Model == "" {
+		return false
+	}
+	if cfg.APIKey != "" {
+		return true
+	}
+	return false
 }
 
 type persistentDedupe struct {

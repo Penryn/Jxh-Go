@@ -214,9 +214,11 @@ go run ./cmd/gormgen -config config.yaml -schema deploy/mysql/init/001_schema.sq
 | `JXH_WPS_SID` | WPS 登录态 sid |
 | `JXH_MYSQL_PASSWORD` | MySQL 密码 |
 | `JXH_MYSQL_DSN` | 完整 MySQL DSN |
-| `JXH_AI_BASE_URL` | OpenAI 兼容 ChatModel base_url |
+| `JXH_AI_PROVIDER` | ChatModel 提供方，支持 `openai`、`ark` |
+| `JXH_AI_BASE_URL` | ChatModel base_url；Ark 可留空使用默认地址 |
 | `JXH_AI_API_KEY` | ChatModel API Key |
-| `JXH_EMBEDDING_BASE_URL` | Embedding base_url |
+| `JXH_EMBEDDING_PROVIDER` | Embedding 提供方，支持 `openai`、`ark` |
+| `JXH_EMBEDDING_BASE_URL` | Embedding base_url；Ark 可留空使用默认地址 |
 | `JXH_EMBEDDING_API_KEY` | Embedding API Key |
 
 ## 目录结构

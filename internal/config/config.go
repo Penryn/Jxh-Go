@@ -64,6 +64,7 @@ type DatabaseConfig struct {
 
 type AIConfig struct {
 	Enabled          bool    `yaml:"enabled"`
+	Provider         string  `yaml:"provider"`
 	BaseURL          string  `yaml:"base_url"`
 	APIKey           string  `yaml:"api_key"`
 	Model            string  `yaml:"model"`
@@ -75,6 +76,7 @@ type AIConfig struct {
 
 type EmbeddingConfig struct {
 	Enabled    bool   `yaml:"enabled"`
+	Provider   string `yaml:"provider"`
 	BaseURL    string `yaml:"base_url"`
 	APIKey     string `yaml:"api_key"`
 	Model      string `yaml:"model"`
@@ -156,6 +158,7 @@ func Default() Config {
 		},
 		AI: AIConfig{
 			Enabled:          true,
+			Provider:         "openai",
 			TimeoutSec:       30,
 			MaxQuestionChars: 500,
 			TopK:             5,
@@ -163,6 +166,7 @@ func Default() Config {
 		},
 		Embedding: EmbeddingConfig{
 			Enabled:    true,
+			Provider:   "openai",
 			Dimensions: 1024,
 		},
 		Vector: VectorConfig{
@@ -193,8 +197,10 @@ func applyEnv(cfg *Config) {
 	override("JXH_WPS_SID", func(v string) { cfg.WPS.SID = v })
 	override("JXH_MYSQL_PASSWORD", func(v string) { cfg.Database.Password = v })
 	override("JXH_MYSQL_DSN", func(v string) { cfg.Database.DSN = v })
+	override("JXH_AI_PROVIDER", func(v string) { cfg.AI.Provider = v })
 	override("JXH_AI_BASE_URL", func(v string) { cfg.AI.BaseURL = v })
 	override("JXH_AI_API_KEY", func(v string) { cfg.AI.APIKey = v })
+	override("JXH_EMBEDDING_PROVIDER", func(v string) { cfg.Embedding.Provider = v })
 	override("JXH_EMBEDDING_BASE_URL", func(v string) { cfg.Embedding.BaseURL = v })
 	override("JXH_EMBEDDING_API_KEY", func(v string) { cfg.Embedding.APIKey = v })
 }
@@ -219,6 +225,12 @@ func normalize(cfg *Config) {
 	}
 	if cfg.AI.MaxQuestionChars <= 0 {
 		cfg.AI.MaxQuestionChars = 500
+	}
+	if cfg.AI.Provider == "" {
+		cfg.AI.Provider = "openai"
+	}
+	if cfg.Embedding.Provider == "" {
+		cfg.Embedding.Provider = "openai"
 	}
 	if cfg.EventDedupe.RetentionHours <= 0 {
 		cfg.EventDedupe.RetentionHours = 72
