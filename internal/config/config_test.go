@@ -41,4 +41,7 @@ func TestLoadAppliesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.Server.Addr != ":8080" {
 		t.Fatalf("default server addr = %q", cfg.Server.Addr)
 	}
+	if cfg.Database.Host != "127.0.0.1" {
+		t.Fatalf("default database host = %q", cfg.Database.Host)
+	}
 }

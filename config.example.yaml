@@ -20,10 +20,10 @@ wps:
   sync_on_start: true
 
 database:
-  host: "mysql"
+  host: "127.0.0.1"
   port: 3306
   user: "jxh"
-  password: ""
+  password: "jxh_password"
   name: "jxh_bot"
   charset: "utf8mb4"
   parse_time: true
@@ -63,7 +63,7 @@ cache:
   ai_retrieval_ttl_sec: 300
 
 quote:
-  base_url: "http://quote:5000"
+  base_url: "http://127.0.0.1:5000"
   timeout_sec: 10
 
 scheduler:

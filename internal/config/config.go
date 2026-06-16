@@ -146,7 +146,7 @@ func Default() Config {
 			SyncOnStart: true,
 		},
 		Database: DatabaseConfig{
-			Host:      "mysql",
+			Host:      "127.0.0.1",
 			Port:      3306,
 			User:      "jxh",
 			Name:      "jxh_bot",

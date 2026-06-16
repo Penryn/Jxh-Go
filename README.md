@@ -18,30 +18,67 @@
 
 ```bash
 cp config.example.yaml config.yaml
+NAPCAT_UID=$(id -u) NAPCAT_GID=$(id -g) docker compose up -d mysql napcat
 go test ./...
 go run ./cmd/bot -config config.yaml
 ```
 
-NapCat 需要独立运行。参考 MumuBot 的部署方式，本项目默认不把 NapCat 放进 Docker Compose，而是在配置里填写 NapCat 的 OneBot WebSocket 地址：
+NapCat 由 compose 作为外部依赖启动，Go bot 服务单独运行。启动后打开 NapCat WebUI：
+
+```text
+http://127.0.0.1:6099/webui
+```
+
+WebUI 登录 token 可通过容器日志查看：
+
+```bash
+docker logs napcat
+```
+
+在 NapCat WebUI 中登录 QQ，并开启 OneBot 11 正向 WebSocket，监听端口使用 `3001`。bot 配置里保持：
 
 ```text
 onebot.ws_url: ws://127.0.0.1:3001
 ```
 
-在 NapCat 中开启 OneBot 11 WebSocket 服务，监听地址和端口与 `onebot.ws_url` 保持一致。如果 bot 跑在 Docker 里、NapCat 跑在宿主机，compose 默认使用：
-
-```text
-JXH_ONEBOT_WS_URL=ws://host.docker.internal:3001
-```
+如果修改了 NapCat 端口，需要同步修改 `config.yaml` 里的 `onebot.ws_url`。
 
 ## Docker Compose
 
+`compose.yaml` 只用于启动外部依赖，不运行 bot 服务本身。
+
 ```bash
 cp config.example.yaml config.yaml
-docker compose up --build
+NAPCAT_UID=$(id -u) NAPCAT_GID=$(id -g) docker compose up -d mysql napcat
+go run ./cmd/bot -config config.yaml
 ```
 
-默认只启动 `mysql` 和 `bot`。NapCat 按 MumuBot 风格独立运行，引用图服务可按实际镜像调整后启用 `quote` profile。
+compose 默认启动：
+
+| 服务 | 作用 | 暴露端口 |
+| --- | --- | --- |
+| `mysql` | GORM/MySQL 数据库 | `3306` |
+| `napcat` | QQ 登录和 OneBot 11 协议适配 | `3000`, `3001`, `6099` |
+
+引用图服务可按实际镜像调整后启用 `quote` profile：
+
+```bash
+docker compose --profile quote up -d
+```
+
+Go bot 不进 compose，保持单独运行：
+
+```bash
+go run ./cmd/bot -config config.yaml
+```
+
+NapCat 数据通过 Docker volume 持久化：
+
+| volume | 容器路径 | 用途 |
+| --- | --- | --- |
+| `napcat_qq` | `/app/.config/QQ` | QQ 登录态 |
+| `napcat_config` | `/app/napcat/config` | NapCat 配置 |
+| `napcat_plugins` | `/app/napcat/plugins` | NapCat 插件 |
 
 ## WPS 表规则
 

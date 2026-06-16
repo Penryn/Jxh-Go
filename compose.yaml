@@ -1,4 +1,20 @@
 services:
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    container_name: napcat
+    restart: unless-stopped
+    environment:
+      NAPCAT_UID: ${NAPCAT_UID:-1000}
+      NAPCAT_GID: ${NAPCAT_GID:-1000}
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "6099:6099"
+    volumes:
+      - napcat_qq:/app/.config/QQ
+      - napcat_config:/app/napcat/config
+      - napcat_plugins:/app/napcat/plugins
+
   mysql:
     image: mysql:8.4
     environment:
@@ -8,34 +24,22 @@ services:
       MYSQL_ROOT_PASSWORD: ${JXH_MYSQL_ROOT_PASSWORD:-root_password}
     volumes:
       - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  bot:
-    build: .
-    depends_on:
-      mysql:
-        condition: service_healthy
-    environment:
-      JXH_MYSQL_PASSWORD: ${JXH_MYSQL_PASSWORD:-jxh_password}
-      JXH_ONEBOT_TOKEN: ${JXH_ONEBOT_TOKEN:-}
-      JXH_ONEBOT_WS_URL: ${JXH_ONEBOT_WS_URL:-ws://host.docker.internal:3001}
-      JXH_WPS_SID: ${JXH_WPS_SID:-}
-      JXH_AI_BASE_URL: ${JXH_AI_BASE_URL:-}
-      JXH_AI_API_KEY: ${JXH_AI_API_KEY:-}
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./config.yaml:/app/config.yaml:ro
-      - bot_data:/app/data
-
   quote:
     image: ghcr.io/mangogovo/qq-quote-generator:latest
     profiles: ["quote"]
+    ports:
+      - "5000:5000"
 
 volumes:
+  napcat_qq:
+  napcat_config:
+  napcat_plugins:
   mysql_data:
-  bot_data:
