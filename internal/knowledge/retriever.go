@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 type RetrievedDocument struct {
@@ -64,7 +65,7 @@ func scoreEntry(entry Entry, query string) (float64, []string) {
 		}
 	}
 	haystack := strings.Join([]string{entry.Keyword, entry.Path, strings.Join(entry.Aliases, " "), entry.Answer, entry.Content}, "\n")
-	for _, term := range strings.Fields(query) {
+	for _, term := range queryTerms(query) {
 		if strings.Contains(haystack, term) {
 			score += 10
 			sources = append(sources, "like")
@@ -75,4 +76,34 @@ func scoreEntry(entry Entry, query string) (float64, []string) {
 		sources = append(sources, "fulltext")
 	}
 	return score, uniqueStrings(sources)
+}
+
+func queryTerms(query string) []string {
+	terms := strings.Fields(query)
+	var cjk []rune
+	flushCJK := func() {
+		if len(cjk) < 2 {
+			cjk = nil
+			return
+		}
+		maxSize := 6
+		if len(cjk) < maxSize {
+			maxSize = len(cjk)
+		}
+		for size := 2; size <= maxSize; size++ {
+			for start := 0; start+size <= len(cjk); start++ {
+				terms = append(terms, string(cjk[start:start+size]))
+			}
+		}
+		cjk = nil
+	}
+	for _, r := range query {
+		if unicode.Is(unicode.Han, r) {
+			cjk = append(cjk, r)
+			continue
+		}
+		flushCJK()
+	}
+	flushCJK()
+	return uniqueStrings(terms)
 }
