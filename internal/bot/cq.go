@@ -51,9 +51,9 @@ func quoteStructuredMessageContent(raw any) (any, bool) {
 		case "text":
 			appendTextSegment(&segments, segmentDataString(segment.Data, "text"))
 		case "image":
-			appendDataImageSegment(&segments, segment.Data, "[图片]")
+			appendDataImageSegment(&segments, segment.Data, "", "[图片]")
 		case "mface", "marketface":
-			appendDataImageSegment(&segments, segment.Data, "[表情]")
+			appendDataImageSegment(&segments, segment.Data, "sticker", "[表情]")
 		case "face", "sface", "bface":
 			appendQQFaceSegment(&segments, stringMapFromAnyMap(segment.Data))
 		case "emoji":
@@ -151,9 +151,9 @@ func appendCQSegment(segments *[]quote.MessageSegment, body string) {
 	case "reply":
 		return
 	case "image":
-		appendURLImageSegment(segments, params["url"], "[图片]")
+		appendURLImageSegment(segments, params["url"], "", "[图片]")
 	case "mface", "marketface":
-		appendURLImageSegment(segments, params["url"], "[表情]")
+		appendURLImageSegment(segments, params["url"], "sticker", "[表情]")
 	case "face", "sface", "bface":
 		appendQQFaceSegment(segments, params)
 	case "emoji":
@@ -165,27 +165,27 @@ func appendCQSegment(segments *[]quote.MessageSegment, body string) {
 	}
 }
 
-func appendURLImageSegment(segments *[]quote.MessageSegment, url, fallback string) {
+func appendURLImageSegment(segments *[]quote.MessageSegment, url, kind, fallback string) {
 	url = strings.TrimSpace(url)
 	if url == "" {
 		appendTextSegment(segments, fallback)
 		return
 	}
-	appendImageSegment(segments, url)
+	appendImageSegment(segments, url, kind)
 }
 
-func appendDataImageSegment(segments *[]quote.MessageSegment, data map[string]any, fallback string) {
+func appendDataImageSegment(segments *[]quote.MessageSegment, data map[string]any, kind, fallback string) {
 	source := firstUsableImageSource(segmentDataString(data, "url"), segmentDataString(data, "file"))
 	if source == "" {
 		appendTextSegment(segments, fallback)
 		return
 	}
-	appendImageSegment(segments, source)
+	appendImageSegment(segments, source, kind)
 }
 
-func appendImageSegment(segments *[]quote.MessageSegment, url string) {
+func appendImageSegment(segments *[]quote.MessageSegment, url, kind string) {
 	url = normalizeQuoteImageSource(url)
-	*segments = append(*segments, quote.MessageSegment{Type: "image", URL: url})
+	*segments = append(*segments, quote.MessageSegment{Type: "image", Kind: kind, URL: url})
 }
 
 func normalizeQuoteImageSource(source string) string {
@@ -221,12 +221,12 @@ func imageFileDataURI(path string) (string, bool) {
 
 func appendQQFaceSegment(segments *[]quote.MessageSegment, params map[string]string) {
 	if url := strings.TrimSpace(params["url"]); url != "" {
-		appendImageSegment(segments, url)
+		appendImageSegment(segments, url, "emoji")
 		return
 	}
 	id := firstNonEmpty(params["id"], params["face_id"], params["emoji_id"])
 	if url, ok := qqFaceDataURI(id); ok {
-		appendImageSegment(segments, url)
+		appendImageSegment(segments, url, "emoji")
 		return
 	}
 	appendTextSegment(segments, "[表情]")
@@ -234,7 +234,7 @@ func appendQQFaceSegment(segments *[]quote.MessageSegment, params map[string]str
 
 func appendCQEmojiSegment(segments *[]quote.MessageSegment, params map[string]string) {
 	if url := strings.TrimSpace(params["url"]); url != "" {
-		appendImageSegment(segments, url)
+		appendImageSegment(segments, url, "emoji")
 		return
 	}
 	id := firstNonEmpty(params["id"], params["emoji_id"])
@@ -243,7 +243,7 @@ func appendCQEmojiSegment(segments *[]quote.MessageSegment, params map[string]st
 		return
 	}
 	if url, ok := qqFaceDataURI(id); ok {
-		appendImageSegment(segments, url)
+		appendImageSegment(segments, url, "emoji")
 		return
 	}
 	appendTextSegment(segments, "[表情]")
@@ -251,7 +251,7 @@ func appendCQEmojiSegment(segments *[]quote.MessageSegment, params map[string]st
 
 func appendStructuredEmojiSegment(segments *[]quote.MessageSegment, data map[string]any) {
 	if source := firstUsableImageSource(segmentDataString(data, "url"), segmentDataString(data, "file")); source != "" {
-		appendImageSegment(segments, source)
+		appendImageSegment(segments, source, "emoji")
 		return
 	}
 	appendCQEmojiSegment(segments, stringMapFromAnyMap(data))

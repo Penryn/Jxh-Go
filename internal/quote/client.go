@@ -13,6 +13,7 @@ import (
 
 type MessageSegment struct {
 	Type string `json:"type"`
+	Kind string `json:"kind,omitempty"`
 	Text string `json:"text,omitempty"`
 	URL  string `json:"url,omitempty"`
 }

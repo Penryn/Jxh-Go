@@ -182,7 +182,7 @@ func TestPipelineQCommandConvertsCQFaceToQuoteImageSegment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","url":"data:image/png;base64,cG5nLWRhdGE="}]}]`
+	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","kind":"emoji","url":"data:image/png;base64,cG5nLWRhdGE="}]}]`
 	if string(data) != wantPayload {
 		t.Fatalf("payload = %s, want %s", data, wantPayload)
 	}
@@ -254,7 +254,7 @@ func TestPipelineQCommandConvertsStructuredEmojiFileToImageSegment(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","url":"data:image/png;base64,cG5nLWRhdGE="}]}]`
+	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","kind":"emoji","url":"data:image/png;base64,cG5nLWRhdGE="}]}]`
 	if string(data) != wantPayload {
 		t.Fatalf("payload = %s, want %s", data, wantPayload)
 	}
@@ -284,7 +284,7 @@ func TestPipelineQCommandConvertsMFaceURLToImageSegment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","url":"https://gxh.vip.qq.com/club/item/parcel/item.png"}]}]`
+	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","kind":"sticker","url":"https://gxh.vip.qq.com/club/item/parcel/item.png"}]}]`
 	if string(data) != wantPayload {
 		t.Fatalf("payload = %s, want %s", data, wantPayload)
 	}
@@ -322,7 +322,7 @@ func TestPipelineQCommandPrefersStructuredMFaceImageURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","url":"https://gxh.vip.qq.com/club/item/parcel/structured.png"}]}]`
+	wantPayload := `[{"user_id":12345,"user_nickname":"张三","message":[{"type":"image","kind":"sticker","url":"https://gxh.vip.qq.com/club/item/parcel/structured.png"}]}]`
 	if string(data) != wantPayload {
 		t.Fatalf("payload = %s, want %s", data, wantPayload)
 	}
