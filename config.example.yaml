@@ -85,38 +85,6 @@ ai:
   # 检索分数阈值。当前文本检索会使用该值过滤低相关知识。
   score_threshold: 0.1
 
-embedding:
-  # Embedding 配置位。当前默认关闭，后续接入向量重建/向量检索时使用。
-  enabled: false
-  # Embedding 提供方。支持 openai 和 ark；空值按 openai 处理。
-  provider: "openai"
-  # Embedding base_url。
-  # openai 示例：https://api.openai.com/v1。
-  # ark 可留空，默认使用 https://ark.cn-beijing.volces.com/api/v3；也可填自定义 Ark base_url。
-  base_url: ""
-  # Embedding API Key，建议用 JXH_EMBEDDING_API_KEY 注入。
-  api_key: ""
-  # Embedding 模型名。openai 填模型名；ark 填方舟 embedding 接入点 ID，如 ep-xxxxxxxx。
-  model: ""
-  # 向量维度，需要和 Embedding 模型输出维度一致。
-  dimensions: 1024
-
-vector:
-  # 向量索引配置位。当前默认关闭；知识库以 MySQL 为源数据，向量索引应可重建。
-  enabled: false
-  # Milvus 地址。bot 单独在宿主机运行时使用 127.0.0.1:19530。
-  address: "127.0.0.1:19530"
-  # Milvus database 名称。
-  db_name: "default"
-  # Milvus collection 名称。
-  collection_name: "jxh_knowledge_vectors"
-  # 向量相似度度量类型，常用 COSINE、IP、L2。
-  metric_type: "COSINE"
-  # 向量检索返回条数。
-  top_k: 8
-  # 向量检索分数阈值。
-  score_threshold: 0.7
-
 event_dedupe:
   # processed_events 保留时间，单位小时。用于避免 NapCat 重连边界重复处理事件。
   retention_hours: 72
@@ -124,7 +92,7 @@ event_dedupe:
   cleanup_interval_hours: 6
 
 cache:
-  # /ai 检索结果缓存 TTL，单位秒。当前保留为配置位，后续可用于降低重复问题检索成本。
+  # /ai 检索结果缓存 TTL，单位秒。设置为 0 可关闭缓存。
   ai_retrieval_ttl_sec: 300
 
 quote:

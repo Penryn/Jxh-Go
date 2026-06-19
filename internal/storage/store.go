@@ -2,8 +2,6 @@ package storage
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"time"
 
 	"github.com/zjutjh/jxh-go/internal/commands"
@@ -34,22 +32,9 @@ func (s *Store) UpsertKnowledgeEntries(ctx context.Context, entries []KnowledgeE
 		ke := tx.KnowledgeEntry
 		for _, entry := range entries {
 			entry.LastImportRunID = runID
-			entry.ContentHash = hashContent(entry.Content)
-			if entry.VectorStatus == "" {
-				entry.VectorStatus = VectorStatusPending
-			}
 			existingModel, err := ke.WithContext(ctx).Where(ke.SourceKey.Eq(entry.SourceKey)).Take()
 			if err == nil {
 				existing := knowledgeEntryFromModel(existingModel)
-				if existing.ContentHash == entry.ContentHash && existing.VectorStatus != "" {
-					entry.VectorStatus = existing.VectorStatus
-					entry.VectorContentHash = existing.VectorContentHash
-					entry.VectorSyncedAt = existing.VectorSyncedAt
-				} else {
-					entry.VectorStatus = VectorStatusPending
-					entry.VectorContentHash = ""
-					entry.VectorSyncedAt = nil
-				}
 				entry.ID = existing.ID
 				entry.CreatedAt = existing.CreatedAt
 				if err := ke.WithContext(ctx).Save(knowledgeEntryToModel(entry)); err != nil {
@@ -259,27 +244,23 @@ func knowledgeEntriesFromModels(entries []*storagemodel.KnowledgeEntry) []Knowle
 
 func knowledgeEntryToModel(entry KnowledgeEntry) *storagemodel.KnowledgeEntry {
 	return &storagemodel.KnowledgeEntry{
-		ID:                entry.ID,
-		SourceKey:         entry.SourceKey,
-		Keyword:           entry.Keyword,
-		EntryType:         entry.EntryType,
-		Path:              stringPtr(entry.Path),
-		AliasesJSON:       stringPtr(entry.AliasesJSON),
-		Category:          stringPtr(entry.Category),
-		TagsJSON:          stringPtr(entry.TagsJSON),
-		Answer:            entry.Answer,
-		Content:           entry.Content,
-		Enabled:           entry.Enabled,
-		ExactReply:        entry.ExactReply,
-		AiEnabled:         entry.AIEnabled,
-		ContentHash:       entry.ContentHash,
-		VectorStatus:      entry.VectorStatus,
-		VectorContentHash: stringPtr(entry.VectorContentHash),
-		VectorSyncedAt:    entry.VectorSyncedAt,
-		LastImportRunID:   uint64Ptr(entry.LastImportRunID),
-		SourceUpdatedAt:   entry.SourceUpdatedAt,
-		CreatedAt:         timePtr(entry.CreatedAt),
-		UpdatedAt:         timePtr(entry.UpdatedAt),
+		ID:              entry.ID,
+		SourceKey:       entry.SourceKey,
+		Keyword:         entry.Keyword,
+		EntryType:       entry.EntryType,
+		Path:            stringPtr(entry.Path),
+		AliasesJSON:     stringPtr(entry.AliasesJSON),
+		Category:        stringPtr(entry.Category),
+		TagsJSON:        stringPtr(entry.TagsJSON),
+		Answer:          entry.Answer,
+		Content:         entry.Content,
+		Enabled:         entry.Enabled,
+		ExactReply:      entry.ExactReply,
+		AiEnabled:       entry.AIEnabled,
+		LastImportRunID: uint64Ptr(entry.LastImportRunID),
+		SourceUpdatedAt: entry.SourceUpdatedAt,
+		CreatedAt:       timePtr(entry.CreatedAt),
+		UpdatedAt:       timePtr(entry.UpdatedAt),
 	}
 }
 
@@ -288,27 +269,23 @@ func knowledgeEntryFromModel(entry *storagemodel.KnowledgeEntry) KnowledgeEntry 
 		return KnowledgeEntry{}
 	}
 	return KnowledgeEntry{
-		ID:                entry.ID,
-		SourceKey:         entry.SourceKey,
-		Keyword:           entry.Keyword,
-		EntryType:         entry.EntryType,
-		Path:              stringFromPtr(entry.Path),
-		AliasesJSON:       stringFromPtr(entry.AliasesJSON),
-		Category:          stringFromPtr(entry.Category),
-		TagsJSON:          stringFromPtr(entry.TagsJSON),
-		Answer:            entry.Answer,
-		Content:           entry.Content,
-		Enabled:           entry.Enabled,
-		ExactReply:        entry.ExactReply,
-		AIEnabled:         entry.AiEnabled,
-		ContentHash:       entry.ContentHash,
-		VectorStatus:      entry.VectorStatus,
-		VectorContentHash: stringFromPtr(entry.VectorContentHash),
-		VectorSyncedAt:    entry.VectorSyncedAt,
-		LastImportRunID:   uint64FromPtr(entry.LastImportRunID),
-		SourceUpdatedAt:   entry.SourceUpdatedAt,
-		CreatedAt:         timeFromPtr(entry.CreatedAt),
-		UpdatedAt:         timeFromPtr(entry.UpdatedAt),
+		ID:              entry.ID,
+		SourceKey:       entry.SourceKey,
+		Keyword:         entry.Keyword,
+		EntryType:       entry.EntryType,
+		Path:            stringFromPtr(entry.Path),
+		AliasesJSON:     stringFromPtr(entry.AliasesJSON),
+		Category:        stringFromPtr(entry.Category),
+		TagsJSON:        stringFromPtr(entry.TagsJSON),
+		Answer:          entry.Answer,
+		Content:         entry.Content,
+		Enabled:         entry.Enabled,
+		ExactReply:      entry.ExactReply,
+		AIEnabled:       entry.AiEnabled,
+		LastImportRunID: uint64FromPtr(entry.LastImportRunID),
+		SourceUpdatedAt: entry.SourceUpdatedAt,
+		CreatedAt:       timeFromPtr(entry.CreatedAt),
+		UpdatedAt:       timeFromPtr(entry.UpdatedAt),
 	}
 }
 
@@ -346,11 +323,6 @@ func timePtr(value time.Time) *time.Time {
 		return nil
 	}
 	return &value
-}
-
-func hashContent(content string) string {
-	sum := sha256.Sum256([]byte(content))
-	return hex.EncodeToString(sum[:])
 }
 
 func FromKnowledgeEntries(entries []knowledge.Entry) []KnowledgeEntry {

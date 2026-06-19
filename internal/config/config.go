@@ -15,8 +15,6 @@ type Config struct {
 	WPS         WPSConfig         `yaml:"wps"`
 	Database    DatabaseConfig    `yaml:"database"`
 	AI          AIConfig          `yaml:"ai"`
-	Embedding   EmbeddingConfig   `yaml:"embedding"`
-	Vector      VectorConfig      `yaml:"vector"`
 	EventDedupe EventDedupeConfig `yaml:"event_dedupe"`
 	Cache       CacheConfig       `yaml:"cache"`
 	Quote       QuoteConfig       `yaml:"quote"`
@@ -74,25 +72,6 @@ type AIConfig struct {
 	MaxQuestionChars int     `yaml:"max_question_chars"`
 	TopK             int     `yaml:"top_k"`
 	ScoreThreshold   float64 `yaml:"score_threshold"`
-}
-
-type EmbeddingConfig struct {
-	Enabled    bool   `yaml:"enabled"`
-	Provider   string `yaml:"provider"`
-	BaseURL    string `yaml:"base_url"`
-	APIKey     string `yaml:"api_key"`
-	Model      string `yaml:"model"`
-	Dimensions int    `yaml:"dimensions"`
-}
-
-type VectorConfig struct {
-	Enabled        bool    `yaml:"enabled"`
-	Address        string  `yaml:"address"`
-	DBName         string  `yaml:"db_name"`
-	CollectionName string  `yaml:"collection_name"`
-	MetricType     string  `yaml:"metric_type"`
-	TopK           int     `yaml:"top_k"`
-	ScoreThreshold float64 `yaml:"score_threshold"`
 }
 
 type EventDedupeConfig struct {
@@ -167,20 +146,6 @@ func Default() Config {
 			TopK:             5,
 			ScoreThreshold:   0.1,
 		},
-		Embedding: EmbeddingConfig{
-			Enabled:    true,
-			Provider:   "openai",
-			Dimensions: 1024,
-		},
-		Vector: VectorConfig{
-			Enabled:        true,
-			Address:        "milvus:19530",
-			DBName:         "default",
-			CollectionName: "jxh_knowledge_vectors",
-			MetricType:     "COSINE",
-			TopK:           8,
-			ScoreThreshold: 0.7,
-		},
 		EventDedupe: EventDedupeConfig{RetentionHours: 72, CleanupIntervalHours: 6},
 		Cache:       CacheConfig{AIRetrievalTTLSec: 300},
 		Quote:       QuoteConfig{BaseURL: "http://quote:5000", TimeoutSec: 10},
@@ -208,9 +173,6 @@ func applyEnv(cfg *Config) {
 	override("JXH_AI_PROVIDER", func(v string) { cfg.AI.Provider = v })
 	override("JXH_AI_BASE_URL", func(v string) { cfg.AI.BaseURL = v })
 	override("JXH_AI_API_KEY", func(v string) { cfg.AI.APIKey = v })
-	override("JXH_EMBEDDING_PROVIDER", func(v string) { cfg.Embedding.Provider = v })
-	override("JXH_EMBEDDING_BASE_URL", func(v string) { cfg.Embedding.BaseURL = v })
-	override("JXH_EMBEDDING_API_KEY", func(v string) { cfg.Embedding.APIKey = v })
 }
 
 func normalize(cfg *Config) {
@@ -239,9 +201,6 @@ func normalize(cfg *Config) {
 	}
 	if cfg.AI.Provider == "" {
 		cfg.AI.Provider = "openai"
-	}
-	if cfg.Embedding.Provider == "" {
-		cfg.Embedding.Provider = "openai"
 	}
 	if cfg.EventDedupe.RetentionHours <= 0 {
 		cfg.EventDedupe.RetentionHours = 72

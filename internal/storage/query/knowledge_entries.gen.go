@@ -40,10 +40,6 @@ func newKnowledgeEntry(db *gorm.DB, opts ...gen.DOOption) knowledgeEntry {
 	_knowledgeEntry.Enabled = field.NewBool(tableName, "enabled")
 	_knowledgeEntry.ExactReply = field.NewBool(tableName, "exact_reply")
 	_knowledgeEntry.AiEnabled = field.NewBool(tableName, "ai_enabled")
-	_knowledgeEntry.ContentHash = field.NewString(tableName, "content_hash")
-	_knowledgeEntry.VectorStatus = field.NewString(tableName, "vector_status")
-	_knowledgeEntry.VectorContentHash = field.NewString(tableName, "vector_content_hash")
-	_knowledgeEntry.VectorSyncedAt = field.NewTime(tableName, "vector_synced_at")
 	_knowledgeEntry.LastImportRunID = field.NewUint64(tableName, "last_import_run_id")
 	_knowledgeEntry.SourceUpdatedAt = field.NewTime(tableName, "source_updated_at")
 	_knowledgeEntry.CreatedAt = field.NewTime(tableName, "created_at")
@@ -57,28 +53,24 @@ func newKnowledgeEntry(db *gorm.DB, opts ...gen.DOOption) knowledgeEntry {
 type knowledgeEntry struct {
 	knowledgeEntryDo knowledgeEntryDo
 
-	ALL               field.Asterisk
-	ID                field.Uint64
-	SourceKey         field.String // çŸ¥è¯†æ¡ç›®ç¨³å®šé”®ï¼›WPS source_id ä¸ºç©ºæ—¶ç”± keyword è§„èŒƒåŒ–ç”Ÿæˆ
-	Keyword           field.String // å…³é”®è¯ï¼›æ—§ WPS å›žå¤è¡¨ç¬¬ä¸€åˆ—
-	EntryType         field.String // æ¡ç›®ç±»åž‹ï¼šknowledge/menu_node/chitchat
-	Path              field.String // ç”± %ç¼–å· èœå•æ ‘ç”Ÿæˆçš„èœå•è·¯å¾„
-	AliasesJSON       field.String // åŒä¹‰é—®æ³• JSON æ•°ç»„
-	Category          field.String // åˆ†ç±»
-	TagsJSON          field.String // æ ‡ç­¾ JSON æ•°ç»„
-	Answer            field.String // æ ‡å‡†å›žç­”ï¼›æ—§ WPS å›žå¤è¡¨ç¬¬äºŒåˆ—
-	Content           field.String // /ai æ£€ç´¢ä½¿ç”¨çš„çŸ¥è¯†æ­£æ–‡
-	Enabled           field.Bool   // æ˜¯å¦å¯ç”¨
-	ExactReply        field.Bool   // æ˜¯å¦å‚ä¸Žæ™®é€šå…³é”®è¯ç²¾ç¡®å›žå¤
-	AiEnabled         field.Bool   // æ˜¯å¦å‚ä¸Ž /ai æ£€ç´¢
-	ContentHash       field.String // content sha256ï¼Œç”¨äºŽåˆ¤æ–­å‘é‡æ˜¯å¦éœ€è¦é‡å»º
-	VectorStatus      field.String // å‘é‡åŒæ­¥çŠ¶æ€ï¼špending/ready/failed
-	VectorContentHash field.String // å·²åŒæ­¥å‘é‡å¯¹åº”çš„ content_hash
-	VectorSyncedAt    field.Time   // å‘é‡åŒæ­¥æ—¶é—´
-	LastImportRunID   field.Uint64 // æœ€è¿‘ä¸€æ¬¡å¯¼å…¥æ‰¹æ¬¡ ID
-	SourceUpdatedAt   field.Time   // æºè¡¨äººå·¥ç»´æŠ¤æ—¶é—´
-	CreatedAt         field.Time
-	UpdatedAt         field.Time
+	ALL             field.Asterisk
+	ID              field.Uint64
+	SourceKey       field.String // çŸ¥è¯†æ¡ç›®ç¨³å®šé”®ï¼›WPS source_id ä¸ºç©ºæ—¶ç”± keyword è§„èŒƒåŒ–ç”Ÿæˆ
+	Keyword         field.String // å…³é”®è¯ï¼›æ—§ WPS å›žå¤è¡¨ç¬¬ä¸€åˆ—
+	EntryType       field.String // æ¡ç›®ç±»åž‹ï¼šknowledge/menu_node/chitchat
+	Path            field.String // ç”± %ç¼–å· èœå•æ ‘ç”Ÿæˆçš„èœå•è·¯å¾„
+	AliasesJSON     field.String // åŒä¹‰é—®æ³• JSON æ•°ç»„
+	Category        field.String // åˆ†ç±»
+	TagsJSON        field.String // æ ‡ç­¾ JSON æ•°ç»„
+	Answer          field.String // æ ‡å‡†å›žç­”ï¼›æ—§ WPS å›žå¤è¡¨ç¬¬äºŒåˆ—
+	Content         field.String // /ai æ£€ç´¢ä½¿ç”¨çš„çŸ¥è¯†æ­£æ–‡
+	Enabled         field.Bool   // æ˜¯å¦å¯ç”¨
+	ExactReply      field.Bool   // æ˜¯å¦å‚ä¸Žæ™®é€šå…³é”®è¯ç²¾ç¡®å›žå¤
+	AiEnabled       field.Bool   // æ˜¯å¦å‚ä¸Ž /ai æ£€ç´¢
+	LastImportRunID field.Uint64 // æœ€è¿‘ä¸€æ¬¡å¯¼å…¥æ‰¹æ¬¡ ID
+	SourceUpdatedAt field.Time   // æºè¡¨äººå·¥ç»´æŠ¤æ—¶é—´
+	CreatedAt       field.Time
+	UpdatedAt       field.Time
 
 	fieldMap map[string]field.Expr
 }
@@ -108,10 +100,6 @@ func (k *knowledgeEntry) updateTableName(table string) *knowledgeEntry {
 	k.Enabled = field.NewBool(table, "enabled")
 	k.ExactReply = field.NewBool(table, "exact_reply")
 	k.AiEnabled = field.NewBool(table, "ai_enabled")
-	k.ContentHash = field.NewString(table, "content_hash")
-	k.VectorStatus = field.NewString(table, "vector_status")
-	k.VectorContentHash = field.NewString(table, "vector_content_hash")
-	k.VectorSyncedAt = field.NewTime(table, "vector_synced_at")
 	k.LastImportRunID = field.NewUint64(table, "last_import_run_id")
 	k.SourceUpdatedAt = field.NewTime(table, "source_updated_at")
 	k.CreatedAt = field.NewTime(table, "created_at")
@@ -144,7 +132,7 @@ func (k *knowledgeEntry) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (k *knowledgeEntry) fillFieldMap() {
-	k.fieldMap = make(map[string]field.Expr, 21)
+	k.fieldMap = make(map[string]field.Expr, 17)
 	k.fieldMap["id"] = k.ID
 	k.fieldMap["source_key"] = k.SourceKey
 	k.fieldMap["keyword"] = k.Keyword
@@ -158,10 +146,6 @@ func (k *knowledgeEntry) fillFieldMap() {
 	k.fieldMap["enabled"] = k.Enabled
 	k.fieldMap["exact_reply"] = k.ExactReply
 	k.fieldMap["ai_enabled"] = k.AiEnabled
-	k.fieldMap["content_hash"] = k.ContentHash
-	k.fieldMap["vector_status"] = k.VectorStatus
-	k.fieldMap["vector_content_hash"] = k.VectorContentHash
-	k.fieldMap["vector_synced_at"] = k.VectorSyncedAt
 	k.fieldMap["last_import_run_id"] = k.LastImportRunID
 	k.fieldMap["source_updated_at"] = k.SourceUpdatedAt
 	k.fieldMap["created_at"] = k.CreatedAt

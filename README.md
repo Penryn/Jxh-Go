@@ -114,21 +114,7 @@ compose 默认启动以下外部依赖：
 docker compose --profile quote up -d
 ```
 
-向量数据库默认不启动。Milvus 由 `milvus-etcd`、`milvus-minio`、`milvus-standalone` 三个服务组成，需要向量检索时启用 `vector` profile：
-
-```bash
-docker compose --profile vector up -d
-```
-
-Milvus 会暴露：
-
-| 服务 | 用途 | 暴露端口 |
-| --- | --- | --- |
-| `milvus-standalone` | Milvus gRPC/API | `19530`, `9091` |
-| `milvus-minio` | Milvus 对象存储依赖 | `9000`, `9001` |
-| `milvus-etcd` | Milvus 元数据依赖 | 不暴露到宿主机 |
-
-当前 `/ai` 可先走 MySQL 知识库的文本检索；`vector.enabled` 打开后，`config.yaml` 里的 `vector.address` 应保持为 `127.0.0.1:19530`，因为 Go bot 是在宿主机单独运行。
+当前 `/ai` 使用 MySQL 知识库加载后的文本检索，不依赖向量数据库。
 
 ## 数据库 Schema
 
@@ -216,9 +202,6 @@ go generate ./internal/storage
 | `JXH_AI_PROVIDER` | ChatModel 提供方，支持 `openai`、`ark` |
 | `JXH_AI_BASE_URL` | ChatModel base_url；Ark 可留空使用默认地址 |
 | `JXH_AI_API_KEY` | ChatModel API Key |
-| `JXH_EMBEDDING_PROVIDER` | Embedding 提供方，支持 `openai`、`ark` |
-| `JXH_EMBEDDING_BASE_URL` | Embedding base_url；Ark 可留空使用默认地址 |
-| `JXH_EMBEDDING_API_KEY` | Embedding API Key |
 
 ## 目录结构
 

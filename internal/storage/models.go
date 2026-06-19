@@ -2,34 +2,24 @@ package storage
 
 import "time"
 
-const (
-	VectorStatusPending = "pending"
-	VectorStatusReady   = "ready"
-	VectorStatusFailed  = "failed"
-)
-
 type KnowledgeEntry struct {
-	ID                uint64 `gorm:"primaryKey"`
-	SourceKey         string `gorm:"size:255;not null;uniqueIndex"`
-	Keyword           string `gorm:"size:255;not null"`
-	EntryType         string `gorm:"size:32;not null"`
-	Path              string `gorm:"size:512"`
-	AliasesJSON       string `gorm:"type:json"`
-	Category          string `gorm:"size:64"`
-	TagsJSON          string `gorm:"type:json"`
-	Answer            string `gorm:"type:text;not null"`
-	Content           string `gorm:"type:mediumtext;not null"`
-	Enabled           bool   `gorm:"not null"`
-	ExactReply        bool   `gorm:"not null"`
-	AIEnabled         bool   `gorm:"not null"`
-	ContentHash       string `gorm:"size:64;not null"`
-	VectorStatus      string `gorm:"size:16;not null;default:pending"`
-	VectorContentHash string `gorm:"size:64"`
-	VectorSyncedAt    *time.Time
-	LastImportRunID   uint64
-	SourceUpdatedAt   *time.Time
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID              uint64 `gorm:"primaryKey"`
+	SourceKey       string `gorm:"size:255;not null;uniqueIndex"`
+	Keyword         string `gorm:"size:255;not null"`
+	EntryType       string `gorm:"size:32;not null"`
+	Path            string `gorm:"size:512"`
+	AliasesJSON     string `gorm:"type:json"`
+	Category        string `gorm:"size:64"`
+	TagsJSON        string `gorm:"type:json"`
+	Answer          string `gorm:"type:text;not null"`
+	Content         string `gorm:"type:mediumtext;not null"`
+	Enabled         bool   `gorm:"not null"`
+	ExactReply      bool   `gorm:"not null"`
+	AIEnabled       bool   `gorm:"not null"`
+	LastImportRunID uint64
+	SourceUpdatedAt *time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type KnowledgeImportRun struct {
