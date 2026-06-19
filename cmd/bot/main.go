@@ -53,7 +53,8 @@ func main() {
 	}
 	domainEntries := storage.ToKnowledgeEntries(entries)
 	knowledgeCache.Replace(knowledge.NewKeywordIndex(domainEntries))
-	aiRetriever := ai.NewRetrieverRef(ai.NewKnowledgeRetriever(domainEntries))
+	knowledgeRetrieverOptions := ai.KnowledgeRetrieverOptions{ScoreThreshold: cfg.AI.ScoreThreshold}
+	aiRetriever := ai.NewRetrieverRef(ai.NewKnowledgeRetriever(domainEntries, knowledgeRetrieverOptions))
 	knowledgeSync := knowledge.NewSyncer(knowledge.SyncerOptions{
 		Source: knowledge.WPSClient{
 			ShareURL:  cfg.WPS.ShareURL,
@@ -65,7 +66,7 @@ func main() {
 		Store: store,
 		OnSynced: func(entries []knowledge.Entry) {
 			knowledgeCache.Replace(knowledge.NewKeywordIndex(entries))
-			aiRetriever.Set(ai.NewKnowledgeRetriever(entries))
+			aiRetriever.Set(ai.NewKnowledgeRetriever(entries, knowledgeRetrieverOptions))
 		},
 	})
 	if cfg.WPS.SyncOnStart && cfg.WPS.ShareURL != "" {

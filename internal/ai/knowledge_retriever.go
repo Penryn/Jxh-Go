@@ -8,11 +8,22 @@ import (
 )
 
 type KnowledgeRetriever struct {
-	Retriever *knowledge.TextRetriever
+	Retriever *knowledge.RetrievalEngine
 }
 
-func NewKnowledgeRetriever(entries []knowledge.Entry) KnowledgeRetriever {
-	return KnowledgeRetriever{Retriever: knowledge.NewTextRetriever(entries)}
+type KnowledgeRetrieverOptions struct {
+	ScoreThreshold float64
+}
+
+func NewKnowledgeRetriever(entries []knowledge.Entry, options ...KnowledgeRetrieverOptions) KnowledgeRetriever {
+	var opts KnowledgeRetrieverOptions
+	if len(options) > 0 {
+		opts = options[0]
+	}
+	return KnowledgeRetriever{Retriever: knowledge.NewRetrievalEngine(knowledge.RetrievalOptions{
+		Entries:        entries,
+		ScoreThreshold: opts.ScoreThreshold,
+	})}
 }
 
 func (r KnowledgeRetriever) Retrieve(ctx context.Context, query string, topK int) ([]Document, error) {

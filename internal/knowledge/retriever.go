@@ -13,15 +13,43 @@ type RetrievedDocument struct {
 	Sources []string
 }
 
+type RetrievalOptions struct {
+	Entries        []Entry
+	ScoreThreshold float64
+}
+
+type RetrievalEngine struct {
+	entries        []Entry
+	scoreThreshold float64
+}
+
 type TextRetriever struct {
-	entries []Entry
+	engine *RetrievalEngine
+}
+
+func NewRetrievalEngine(opts RetrievalOptions) *RetrievalEngine {
+	threshold := opts.ScoreThreshold
+	if threshold < 0 {
+		threshold = 0
+	}
+	return &RetrievalEngine{
+		entries:        append([]Entry(nil), opts.Entries...),
+		scoreThreshold: threshold,
+	}
 }
 
 func NewTextRetriever(entries []Entry) *TextRetriever {
-	return &TextRetriever{entries: entries}
+	return &TextRetriever{engine: NewRetrievalEngine(RetrievalOptions{Entries: entries})}
 }
 
 func (r *TextRetriever) Retrieve(ctx context.Context, query string, topK int) ([]RetrievedDocument, error) {
+	if r == nil || r.engine == nil {
+		return nil, nil
+	}
+	return r.engine.Retrieve(ctx, query, topK)
+}
+
+func (r *RetrievalEngine) Retrieve(ctx context.Context, query string, topK int) ([]RetrievedDocument, error) {
 	_ = ctx
 	query = strings.TrimSpace(query)
 	if query == "" {
@@ -30,16 +58,31 @@ func (r *TextRetriever) Retrieve(ctx context.Context, query string, topK int) ([
 	if topK <= 0 {
 		topK = 5
 	}
-	var docs []RetrievedDocument
+	candidates := make(map[string]RetrievedDocument)
 	for _, entry := range r.entries {
 		if !entry.Enabled || !entry.AIEnabled {
 			continue
 		}
-		score, sources := scoreEntry(entry, query)
-		if score <= 0 {
+		for _, doc := range recallEntry(entry, query) {
+			key := retrievalKey(doc.Entry)
+			existing, ok := candidates[key]
+			if !ok {
+				candidates[key] = doc
+				continue
+			}
+			if doc.Score > existing.Score {
+				existing.Score = doc.Score
+			}
+			existing.Sources = uniqueStrings(append(existing.Sources, doc.Sources...))
+			candidates[key] = existing
+		}
+	}
+	docs := make([]RetrievedDocument, 0, len(candidates))
+	for _, doc := range candidates {
+		if doc.Score < r.scoreThreshold {
 			continue
 		}
-		docs = append(docs, RetrievedDocument{Entry: entry, Score: score, Sources: sources})
+		docs = append(docs, doc)
 	}
 	sort.SliceStable(docs, func(i, j int) bool {
 		return docs[i].Score > docs[j].Score
@@ -50,32 +93,45 @@ func (r *TextRetriever) Retrieve(ctx context.Context, query string, topK int) ([
 	return docs, nil
 }
 
-func scoreEntry(entry Entry, query string) (float64, []string) {
-	var score float64
-	var sources []string
+func recallEntry(entry Entry, query string) []RetrievedDocument {
+	var docs []RetrievedDocument
 	if entry.Keyword == query {
-		score += 100
-		sources = append(sources, "exact")
+		docs = append(docs, RetrievedDocument{Entry: entry, Score: 1, Sources: []string{"exact"}})
 	}
 	for _, alias := range entry.Aliases {
 		if alias == query {
-			score += 90
-			sources = append(sources, "exact")
+			docs = append(docs, RetrievedDocument{Entry: entry, Score: 0.9, Sources: []string{"exact"}})
 			break
 		}
 	}
+	if score := scoreText(entry, query); score > 0 {
+		docs = append(docs, RetrievedDocument{Entry: entry, Score: score, Sources: []string{"text"}})
+	}
+	return docs
+}
+
+func scoreText(entry Entry, query string) float64 {
+	var score float64
 	haystack := strings.Join([]string{entry.Keyword, entry.Path, strings.Join(entry.Aliases, " "), entry.Answer, entry.Content}, "\n")
 	for _, term := range queryTerms(query) {
 		if strings.Contains(haystack, term) {
-			score += 10
-			sources = append(sources, "like")
+			score += 0.1
 		}
 	}
 	if strings.Contains(haystack, query) {
-		score += 20
-		sources = append(sources, "fulltext")
+		score += 0.2
 	}
-	return score, uniqueStrings(sources)
+	if score > 0.8 {
+		return 0.8
+	}
+	return score
+}
+
+func retrievalKey(entry Entry) string {
+	if entry.SourceKey != "" {
+		return entry.SourceKey
+	}
+	return normalizeKey(entry.Keyword)
 }
 
 func queryTerms(query string) []string {
