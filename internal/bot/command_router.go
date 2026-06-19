@@ -73,15 +73,20 @@ func (r *GroupCommandRouter) handleQuote(ctx context.Context, msg GroupMessage, 
 	if err != nil {
 		return sender.SendGroupText(ctx, msg.GroupID, "获取被引用消息失败："+err.Error())
 	}
-	content := quote.ContentFromMessage(quoted.RawMessage, quoted.Message)
-	if quote.IsEmptyContent(content) {
+	resolver, _ := sender.(quote.ImageResolver)
+	payload, err := quote.BuildPayload(ctx, quote.MessageInput{
+		UserID:     quoted.UserID,
+		Nickname:   quoted.Nickname,
+		RawMessage: quoted.RawMessage,
+		Message:    quoted.Message,
+	}, resolver)
+	if err != nil {
+		return sender.SendGroupText(ctx, msg.GroupID, "引用图消息解析失败："+err.Error())
+	}
+	if len(payload) == 0 || quote.IsEmptyContent(payload[0].Message) {
 		return sender.SendGroupText(ctx, msg.GroupID, "被引用消息内容为空")
 	}
-	image, err := r.quote.Generate(ctx, quote.Payload{{
-		UserID:       quoted.UserID,
-		UserNickname: quote.Nickname(quoted.Nickname),
-		Message:      content,
-	}})
+	image, err := r.quote.Generate(ctx, payload)
 	if err != nil {
 		return sender.SendGroupText(ctx, msg.GroupID, "引用图生成失败："+err.Error())
 	}

@@ -2,14 +2,10 @@ package napcat
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/zjutjh/jxh-go/internal/bot"
@@ -27,13 +23,6 @@ type Handler interface {
 type Dedupe interface {
 	SeenOrMark(key string) bool
 }
-
-const maxQuoteImageBytes = 5 << 20
-
-var (
-	quoteImageHTTPClient = &http.Client{Timeout: 5 * time.Second}
-	quoteImageRetryDelay = 200 * time.Millisecond
-)
 
 type Server struct {
 	Addr           string
@@ -218,161 +207,23 @@ func (s SDKSender) GetQuoteMessage(ctx context.Context, messageID int64) (bot.Qu
 	if err := s.client.API().Call(ctx, string(api.ActionGetMsg), api.GetMsgRequest{MessageID: messageID}, &msg); err != nil {
 		return bot.QuotedMessage{}, err
 	}
-	message := s.enrichQuoteMessageImages(ctx, msg.Message)
 	return bot.QuotedMessage{
 		UserID:     anyInt64(msg.UserID),
 		Nickname:   senderNickname(msg.Sender),
 		RawMessage: msg.RawMessage,
-		Message:    message,
+		Message:    msg.Message,
 	}, nil
 }
 
-func (s SDKSender) enrichQuoteMessageImages(ctx context.Context, raw any) any {
-	segments, ok := raw.([]any)
-	if !ok {
-		return raw
-	}
-	out := make([]any, len(segments))
-	copy(out, segments)
-	for i, item := range out {
-		segment, ok := item.(map[string]any)
-		if !ok || !quoteImageSegmentType(anyString(segment["type"])) {
-			continue
-		}
-		data, ok := segment["data"].(map[string]any)
-		if !ok {
-			continue
-		}
-		if url := anyString(data["url"]); url != "" {
-			if dataURI := quoteImageHTTPDataURI(ctx, url); dataURI != "" {
-				newData := cloneAnyMap(data)
-				newData["url"] = dataURI
-				newSegment := cloneAnyMap(segment)
-				newSegment["data"] = newData
-				out[i] = newSegment
-				continue
-			}
-			if usableImageSource(url) {
-				continue
-			}
-		}
-		file := anyString(data["file"])
-		if dataURI := quoteImageHTTPDataURI(ctx, file); dataURI != "" {
-			newData := cloneAnyMap(data)
-			newData["url"] = dataURI
-			newSegment := cloneAnyMap(segment)
-			newSegment["data"] = newData
-			out[i] = newSegment
-			continue
-		}
-		if file == "" || usableImageSource(file) {
-			continue
-		}
-		url := s.quoteImageURL(ctx, file)
-		if url == "" {
-			continue
-		}
-		newData := cloneAnyMap(data)
-		newData["url"] = url
-		newSegment := cloneAnyMap(segment)
-		newSegment["data"] = newData
-		out[i] = newSegment
-	}
-	return out
-}
-
-func (s SDKSender) quoteImageURL(ctx context.Context, file string) string {
+func (s SDKSender) ResolveImage(ctx context.Context, file string) (string, error) {
 	var data map[string]any
 	if err := s.client.API().Call(ctx, "get_image", map[string]any{"file": file}, &data); err != nil {
-		log.Printf("get quote image url failed: %v", err)
-		return ""
+		return "", err
 	}
 	if url := anyString(data["url"]); url != "" {
-		return url
+		return url, nil
 	}
-	return anyString(data["file"])
-}
-
-func quoteImageHTTPDataURI(ctx context.Context, source string) string {
-	if !httpImageSource(source) {
-		return ""
-	}
-	for attempt := 0; attempt < 3; attempt++ {
-		dataURI, ok := fetchQuoteImageDataURI(ctx, source)
-		if ok {
-			return dataURI
-		}
-		if attempt == 2 || quoteImageRetryDelay <= 0 {
-			continue
-		}
-		timer := time.NewTimer(quoteImageRetryDelay)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return ""
-		case <-timer.C:
-		}
-	}
-	return ""
-}
-
-func fetchQuoteImageDataURI(ctx context.Context, source string) (string, bool) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, source, nil)
-	if err != nil {
-		return "", false
-	}
-	resp, err := quoteImageHTTPClient.Do(req)
-	if err != nil {
-		return "", false
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", false
-	}
-	data, err := io.ReadAll(io.LimitReader(resp.Body, maxQuoteImageBytes+1))
-	if err != nil || len(data) == 0 || len(data) > maxQuoteImageBytes {
-		return "", false
-	}
-	contentType := strings.TrimSpace(strings.Split(resp.Header.Get("Content-Type"), ";")[0])
-	if contentType == "" {
-		contentType = http.DetectContentType(data)
-	}
-	if !strings.HasPrefix(strings.ToLower(contentType), "image/") {
-		return "", false
-	}
-	return "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(data), true
-}
-
-func quoteImageSegmentType(segmentType string) bool {
-	switch segmentType {
-	case "image", "mface", "marketface", "emoji":
-		return true
-	default:
-		return false
-	}
-}
-
-func usableImageSource(value string) bool {
-	lower := strings.ToLower(strings.TrimSpace(value))
-	return strings.HasPrefix(lower, "http://") ||
-		strings.HasPrefix(lower, "https://") ||
-		strings.HasPrefix(lower, "data:image/") ||
-		strings.HasPrefix(lower, "base64://") ||
-		strings.HasPrefix(lower, "file://") ||
-		strings.HasPrefix(lower, "/")
-}
-
-func httpImageSource(value string) bool {
-	lower := strings.ToLower(strings.TrimSpace(value))
-	return strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://")
-}
-
-func cloneAnyMap(in map[string]any) map[string]any {
-	out := make(map[string]any, len(in))
-	for key, value := range in {
-		out[key] = value
-	}
-	return out
+	return anyString(data["file"]), nil
 }
 
 func (s SDKSender) SetGroupBan(ctx context.Context, groupID, userID int64, duration time.Duration) error {
