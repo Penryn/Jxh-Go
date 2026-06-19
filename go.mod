@@ -7,7 +7,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.68
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.13
 	github.com/xuri/excelize/v2 v2.10.1
-	github.com/zjutjh/napcat-sdk v0.0.0-00010101000000-000000000000
+	github.com/zjutjh/napcat-sdk v1.0.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gen v0.3.28
@@ -74,5 +74,3 @@ require (
 	gorm.io/datatypes v1.2.7 // indirect
 	gorm.io/hints v1.1.2 // indirect
 )
-
-replace github.com/zjutjh/napcat-sdk => github.com/Penryn/napcat-sdk v0.0.0-20260615182524-fa9086ba3772
