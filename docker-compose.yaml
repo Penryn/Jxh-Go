@@ -1,7 +1,27 @@
 services:
+  mysql:
+    image: mysql:8.4
+    container_name: jxh-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: jxh_bot
+      MYSQL_USER: jxh
+      MYSQL_PASSWORD: ${JXH_MYSQL_PASSWORD:-jxh_password}
+      MYSQL_ROOT_PASSWORD: ${JXH_MYSQL_ROOT_PASSWORD:-root_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./deploy/mysql/init/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   napcat:
     image: mlikiowa/napcat-docker:latest
-    container_name: napcat
+    container_name: jxh-napcat
     restart: unless-stopped
     environment:
       NAPCAT_UID: ${NAPCAT_UID:-1000}
@@ -11,37 +31,39 @@ services:
       - "3001:3001"
       - "6099:6099"
     volumes:
-      - napcat_qq:/app/.config/QQ
-      - napcat_config:/app/napcat/config
-      - napcat_plugins:/app/napcat/plugins
-
-  mysql:
-    image: mysql:8.4
-    environment:
-      MYSQL_DATABASE: jxh_bot
-      MYSQL_USER: jxh
-      MYSQL_PASSWORD: ${JXH_MYSQL_PASSWORD:-jxh_password}
-      MYSQL_ROOT_PASSWORD: ${JXH_MYSQL_ROOT_PASSWORD:-root_password}
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./deploy/mysql/init/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      - ./data/napcat/qq:/app/.config/QQ
+      - ./data/napcat/config:/app/napcat/config
+      - ./data/napcat/plugins:/app/napcat/plugins
 
   quote:
     image: phlin996/qq-quote-go:latest
-    container_name: qq-quote-go
-    profiles: ["quote"]
+    container_name: jxh-quote
+    restart: unless-stopped
     ports:
       - "5000:5000"
 
-volumes:
-  napcat_qq:
-  napcat_config:
-  napcat_plugins:
-  mysql_data:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jxh-bot
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      napcat:
+        condition: service_started
+      quote:
+        condition: service_started
+    environment:
+      JXH_ONEBOT_WS_URL: ws://napcat:3001
+      JXH_ONEBOT_TOKEN: ${JXH_ONEBOT_TOKEN:-change-me}
+      JXH_MYSQL_DSN: ${JXH_MYSQL_DSN:-jxh:${JXH_MYSQL_PASSWORD:-jxh_password}@tcp(mysql:3306)/jxh_bot?charset=utf8mb4&parseTime=True&loc=Local}
+      JXH_QUOTE_BASE_URL: http://quote:5000
+      JXH_WPS_SHARE_URL: ${JXH_WPS_SHARE_URL:-}
+      JXH_WPS_SID: ${JXH_WPS_SID:-}
+      JXH_AI_PROVIDER: ${JXH_AI_PROVIDER:-openai}
+      JXH_AI_BASE_URL: ${JXH_AI_BASE_URL:-}
+      JXH_AI_API_KEY: ${JXH_AI_API_KEY:-}
+    volumes:
+      - ./data:/app/data

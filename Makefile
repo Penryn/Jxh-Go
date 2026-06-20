@@ -32,8 +32,8 @@ tidy: ## Tidy Go module dependencies
 clean: ## Remove build artifacts
 	rm -rf $(dir $(BINARY))
 
-compose-up: ## Start local external dependencies
-	NAPCAT_UID=$(NAPCAT_UID) NAPCAT_GID=$(NAPCAT_GID) $(COMPOSE) up -d mysql napcat
+compose-up: ## Start the full compose stack
+	NAPCAT_UID=$(NAPCAT_UID) NAPCAT_GID=$(NAPCAT_GID) $(COMPOSE) up -d --build
 
 compose-down: ## Stop local external dependencies
 	$(COMPOSE) down
