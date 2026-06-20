@@ -169,6 +169,7 @@ go run ./cmd/bot -config config.yaml
 | `JXH_AI_PROVIDER` | ChatModel 提供方，支持 `openai`、`ark` |
 | `JXH_AI_BASE_URL` | ChatModel base URL |
 | `JXH_AI_API_KEY` | ChatModel API Key |
+| `JXH_AI_MODEL` | ChatModel 模型名；openai 填模型名，ark 填方舟推理接入点 ID |
 
 AI 行为：
 

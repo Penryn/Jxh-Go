@@ -65,5 +65,6 @@ services:
       JXH_AI_PROVIDER: ${JXH_AI_PROVIDER:-openai}
       JXH_AI_BASE_URL: ${JXH_AI_BASE_URL:-}
       JXH_AI_API_KEY: ${JXH_AI_API_KEY:-}
+      JXH_AI_MODEL: ${JXH_AI_MODEL:-}
     volumes:
       - ./data:/app/data

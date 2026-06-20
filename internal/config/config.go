@@ -191,6 +191,7 @@ func applyEnv(cfg *Config) {
 	override("JXH_AI_PROVIDER", func(v string) { cfg.AI.Provider = v })
 	override("JXH_AI_BASE_URL", func(v string) { cfg.AI.BaseURL = v })
 	override("JXH_AI_API_KEY", func(v string) { cfg.AI.APIKey = v })
+	override("JXH_AI_MODEL", func(v string) { cfg.AI.Model = v })
 }
 
 func normalize(cfg *Config) {
