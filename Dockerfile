@@ -1,15 +1,19 @@
-FROM golang:1.25-alpine AS build
+FROM golang:1.25-trixie AS build
 
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
+COPY cmd ./cmd
+COPY internal ./internal
 RUN CGO_ENABLED=0 go build -o /out/jxh-bot ./cmd/bot
 
-FROM alpine:3.22
+FROM debian:trixie-slim
 
 WORKDIR /app
-RUN adduser -D -H appuser
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates tzdata \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --home-dir /app --shell /usr/sbin/nologin appuser
 COPY --from=build /out/jxh-bot /usr/local/bin/jxh-bot
 COPY config.example.yaml /app/config.yaml
 RUN mkdir -p /app/data/cache && chown -R appuser:appuser /app

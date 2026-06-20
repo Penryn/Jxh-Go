@@ -162,7 +162,24 @@ func applyEnv(cfg *Config) {
 	}
 	override("JXH_ONEBOT_TOKEN", func(v string) { cfg.OneBot.AccessToken = v })
 	override("JXH_ONEBOT_WS_URL", func(v string) { cfg.OneBot.WSURL = v })
+	override("JXH_SERVER_ADDR", func(v string) { cfg.Server.Addr = v })
+	override("JXH_DATABASE_HOST", func(v string) { cfg.Database.Host = v })
+	override("JXH_DATABASE_PORT", func(v string) {
+		if parsed, err := strconv.Atoi(v); err == nil {
+			cfg.Database.Port = parsed
+		}
+	})
+	override("JXH_DATABASE_USER", func(v string) { cfg.Database.User = v })
+	override("JXH_DATABASE_NAME", func(v string) { cfg.Database.Name = v })
+	override("JXH_DATABASE_CHARSET", func(v string) { cfg.Database.Charset = v })
+	override("JXH_DATABASE_PARSE_TIME", func(v string) {
+		if parsed, err := strconv.ParseBool(v); err == nil {
+			cfg.Database.ParseTime = parsed
+		}
+	})
+	override("JXH_DATABASE_LOC", func(v string) { cfg.Database.Loc = v })
 	override("JXH_WPS_SID", func(v string) { cfg.WPS.SID = v })
+	override("JXH_WPS_SHARE_URL", func(v string) { cfg.WPS.ShareURL = v })
 	override("JXH_WPS_TIMEOUT_SEC", func(v string) {
 		if parsed, err := strconv.Atoi(v); err == nil {
 			cfg.WPS.TimeoutSec = parsed
@@ -170,9 +187,11 @@ func applyEnv(cfg *Config) {
 	})
 	override("JXH_MYSQL_PASSWORD", func(v string) { cfg.Database.Password = v })
 	override("JXH_MYSQL_DSN", func(v string) { cfg.Database.DSN = v })
+	override("JXH_QUOTE_BASE_URL", func(v string) { cfg.Quote.BaseURL = v })
 	override("JXH_AI_PROVIDER", func(v string) { cfg.AI.Provider = v })
 	override("JXH_AI_BASE_URL", func(v string) { cfg.AI.BaseURL = v })
 	override("JXH_AI_API_KEY", func(v string) { cfg.AI.APIKey = v })
+	override("JXH_AI_MODEL", func(v string) { cfg.AI.Model = v })
 }
 
 func normalize(cfg *Config) {
